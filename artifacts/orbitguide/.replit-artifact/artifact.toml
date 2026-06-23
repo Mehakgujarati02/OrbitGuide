@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "OrbitGuide"
+version = "1.0.0"
+id = "artifacts/orbitguide"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24782
+
+[services.development]
+run = "pnpm --filter @workspace/orbitguide run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/orbitguide", "run", "build" ]
+publicDir = "artifacts/orbitguide/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24782"
+BASE_PATH = "/"

@@ -1,22 +1,29 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: OrbitGuide API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: repositories
+    description: GitLab repository operations
+  - name: chat
+    description: AI codebase chat
+  - name: learning
+    description: Learning path generation
+  - name: architecture
+    description: Architecture exploration
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +31,308 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /repositories:
+    get:
+      operationId: listRepositories
+      tags: [repositories]
+      summary: List analyzed repositories
+      responses:
+        "200":
+          description: List of repositories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Repository"
+    post:
+      operationId: analyzeRepository
+      tags: [repositories]
+      summary: Analyze a GitLab repository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RepositoryInput"
+      responses:
+        "201":
+          description: Repository analysis started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Repository"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /repositories/{id}:
+    get:
+      operationId: getRepository
+      tags: [repositories]
+      summary: Get repository details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Repository details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepositoryDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteRepository
+      tags: [repositories]
+      summary: Delete a repository
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /repositories/{id}/summary:
+    get:
+      operationId: getRepositorySummary
+      tags: [repositories]
+      summary: Get AI-generated repository summary and overview
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Repository summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepositorySummary"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /repositories/{id}/files:
+    get:
+      operationId: getRepositoryFiles
+      tags: [repositories]
+      summary: Get repository file tree
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: File tree
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileNode"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /repositories/{id}/stats:
+    get:
+      operationId: getRepositoryStats
+      tags: [repositories]
+      summary: Get repository statistics (language breakdown, file counts, etc.)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Repository stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepositoryStats"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /repositories/{id}/chat:
+    get:
+      operationId: listChatMessages
+      tags: [chat]
+      summary: Get chat history for a repository
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+    post:
+      operationId: sendChatMessage
+      tags: [chat]
+      summary: Send a question and get AI response (streaming SSE)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageInput"
+      responses:
+        "200":
+          description: SSE stream of AI response chunks
+          content:
+            text/event-stream: {}
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /repositories/{id}/learning-path:
+    get:
+      operationId: getLearningPath
+      tags: [learning]
+      summary: Get existing learning path for a repository
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Learning path
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningPath"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    post:
+      operationId: generateLearningPath
+      tags: [learning]
+      summary: Generate a custom learning path
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LearningPathRequest"
+      responses:
+        "200":
+          description: Generated learning path
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningPath"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /repositories/{id}/architecture:
+    get:
+      operationId: getArchitecture
+      tags: [architecture]
+      summary: Get architecture graph and component relationships
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Architecture data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Architecture"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /repositories/{id}/chat/clear:
+    delete:
+      operationId: clearChatHistory
+      tags: [chat]
+      summary: Clear chat history for a repository
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Cleared
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +343,421 @@ components:
       required:
         - status
 
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Repository:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        url:
+          type: string
+        namespace:
+          type: string
+        description:
+          type: ["string", "null"]
+        defaultBranch:
+          type: string
+        status:
+          type: string
+          enum: [pending, analyzing, ready, error]
+        language:
+          type: ["string", "null"]
+        starCount:
+          type: integer
+        forksCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - url
+        - namespace
+        - defaultBranch
+        - status
+        - starCount
+        - forksCount
+        - createdAt
+        - updatedAt
+
+    RepositoryDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        url:
+          type: string
+        namespace:
+          type: string
+        description:
+          type: ["string", "null"]
+        defaultBranch:
+          type: string
+        status:
+          type: string
+          enum: [pending, analyzing, ready, error]
+        language:
+          type: ["string", "null"]
+        starCount:
+          type: integer
+        forksCount:
+          type: integer
+        summary:
+          type: ["string", "null"]
+        modules:
+          type: array
+          items:
+            type: string
+        keyServices:
+          type: array
+          items:
+            type: string
+        techStack:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - url
+        - namespace
+        - defaultBranch
+        - status
+        - starCount
+        - forksCount
+        - modules
+        - keyServices
+        - techStack
+        - createdAt
+        - updatedAt
+
+    RepositoryInput:
+      type: object
+      properties:
+        url:
+          type: string
+          description: GitLab repository URL
+      required:
+        - url
+
+    RepositorySummary:
+      type: object
+      properties:
+        repositoryId:
+          type: integer
+        overview:
+          type: string
+        purpose:
+          type: string
+        mainModules:
+          type: array
+          items:
+            $ref: "#/components/schemas/Module"
+        keyServices:
+          type: array
+          items:
+            $ref: "#/components/schemas/Service"
+        entryPoints:
+          type: array
+          items:
+            type: string
+        techStack:
+          type: array
+          items:
+            type: string
+      required:
+        - repositoryId
+        - overview
+        - purpose
+        - mainModules
+        - keyServices
+        - entryPoints
+        - techStack
+
+    Module:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        path:
+          type: string
+        importance:
+          type: string
+          enum: [high, medium, low]
+      required:
+        - name
+        - description
+        - path
+        - importance
+
+    Service:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        dependencies:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - description
+        - dependencies
+
+    FileNode:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        type:
+          type: string
+          enum: [file, directory]
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/FileNode"
+      required:
+        - name
+        - path
+        - type
+
+    RepositoryStats:
+      type: object
+      properties:
+        repositoryId:
+          type: integer
+        totalFiles:
+          type: integer
+        totalLines:
+          type: integer
+        languages:
+          type: array
+          items:
+            $ref: "#/components/schemas/LanguageStat"
+        lastCommit:
+          type: ["string", "null"]
+        contributors:
+          type: integer
+      required:
+        - repositoryId
+        - totalFiles
+        - totalLines
+        - languages
+        - contributors
+
+    LanguageStat:
+      type: object
+      properties:
+        language:
+          type: string
+        percentage:
+          type: number
+        fileCount:
+          type: integer
+      required:
+        - language
+        - percentage
+        - fileCount
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        repositoryId:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - repositoryId
+        - role
+        - content
+        - createdAt
+
+    ChatMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    LearningPath:
+      type: object
+      properties:
+        id:
+          type: integer
+        repositoryId:
+          type: integer
+        topic:
+          type: ["string", "null"]
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/LearningStep"
+        totalEstimatedMinutes:
+          type: integer
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - repositoryId
+        - steps
+        - totalEstimatedMinutes
+        - difficulty
+        - createdAt
+
+    LearningStep:
+      type: object
+      properties:
+        stepNumber:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        files:
+          type: array
+          items:
+            type: string
+        estimatedMinutes:
+          type: integer
+        concepts:
+          type: array
+          items:
+            type: string
+      required:
+        - stepNumber
+        - title
+        - description
+        - files
+        - estimatedMinutes
+        - concepts
+
+    LearningPathRequest:
+      type: object
+      properties:
+        topic:
+          type: string
+          description: Topic or area to focus on (e.g. "authentication", "payment flow")
+      required:
+        - topic
+
+    Architecture:
+      type: object
+      properties:
+        repositoryId:
+          type: integer
+        components:
+          type: array
+          items:
+            $ref: "#/components/schemas/ArchitectureComponent"
+        dependencies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Dependency"
+        layers:
+          type: array
+          items:
+            $ref: "#/components/schemas/ArchitectureLayer"
+        diagramText:
+          type: string
+      required:
+        - repositoryId
+        - components
+        - dependencies
+        - layers
+        - diagramText
+
+    ArchitectureComponent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [controller, service, repository, model, config, utility, middleware, other]
+        description:
+          type: string
+        filePath:
+          type: string
+        layer:
+          type: string
+      required:
+        - id
+        - name
+        - type
+        - description
+        - filePath
+        - layer
+
+    Dependency:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        type:
+          type: string
+          enum: [calls, imports, extends, implements]
+      required:
+        - from
+        - to
+        - type
+
+    ArchitectureLayer:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        components:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - description
+        - components
