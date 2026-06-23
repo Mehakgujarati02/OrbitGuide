@@ -247,3 +247,42 @@ export interface Architecture {
   diagramText: string;
 }
 
+export type HealthScoreRiskLevel = typeof HealthScoreRiskLevel[keyof typeof HealthScoreRiskLevel];
+
+
+export const HealthScoreRiskLevel = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  critical: 'critical',
+} as const;
+
+export interface HealthCategory {
+  name: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  score: number;
+  signals: string[];
+  recommendation: string;
+}
+
+export interface HealthScore {
+  repositoryId: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  overallScore: number;
+  riskLevel: HealthScoreRiskLevel;
+  categories: HealthCategory[];
+  insights: string[];
+  recommendations: string[];
+  generatedAt: string;
+}
+
+export type GetHealthScoreParams = {
+refresh?: boolean;
+};
+

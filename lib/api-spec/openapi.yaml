@@ -318,6 +318,36 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /repositories/{id}/health:
+    get:
+      operationId: getHealthScore
+      tags: [repositories]
+      summary: Get AI-generated health score for a repository
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: refresh
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Health score
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthScore"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /repositories/{id}/chat/clear:
     delete:
       operationId: clearChatHistory
@@ -745,6 +775,63 @@ components:
         - from
         - to
         - type
+
+    HealthScore:
+      type: object
+      properties:
+        repositoryId:
+          type: integer
+        overallScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/HealthCategory"
+        insights:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+        generatedAt:
+          type: string
+          format: date-time
+      required:
+        - repositoryId
+        - overallScore
+        - riskLevel
+        - categories
+        - insights
+        - recommendations
+        - generatedAt
+
+    HealthCategory:
+      type: object
+      properties:
+        name:
+          type: string
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        signals:
+          type: array
+          items:
+            type: string
+        recommendation:
+          type: string
+      required:
+        - name
+        - score
+        - signals
+        - recommendation
 
     ArchitectureLayer:
       type: object

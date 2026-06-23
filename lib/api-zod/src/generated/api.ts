@@ -258,6 +258,41 @@ export const GetArchitectureResponse = zod.object({
 
 
 /**
+ * @summary Get AI-generated health score for a repository
+ */
+export const GetHealthScoreParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetHealthScoreQueryParams = zod.object({
+  "refresh": zod.coerce.boolean().optional()
+})
+
+export const getHealthScoreResponseOverallScoreMin = 0;
+export const getHealthScoreResponseOverallScoreMax = 100;
+
+export const getHealthScoreResponseCategoriesItemScoreMin = 0;
+export const getHealthScoreResponseCategoriesItemScoreMax = 100;
+
+
+
+export const GetHealthScoreResponse = zod.object({
+  "repositoryId": zod.number(),
+  "overallScore": zod.number().min(getHealthScoreResponseOverallScoreMin).max(getHealthScoreResponseOverallScoreMax),
+  "riskLevel": zod.enum(['low', 'medium', 'high', 'critical']),
+  "categories": zod.array(zod.object({
+  "name": zod.string(),
+  "score": zod.number().min(getHealthScoreResponseCategoriesItemScoreMin).max(getHealthScoreResponseCategoriesItemScoreMax),
+  "signals": zod.array(zod.string()),
+  "recommendation": zod.string()
+})),
+  "insights": zod.array(zod.string()),
+  "recommendations": zod.array(zod.string()),
+  "generatedAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Clear chat history for a repository
  */
 export const ClearChatHistoryParams = zod.object({

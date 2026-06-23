@@ -135,6 +135,117 @@ Requirements:
 - difficulty: beginner if the topic is introductory, intermediate for core systems, advanced for complex internals`;
 }
 
+export function buildHealthScorePrompt(
+  repoName: string,
+  fileTree: string,
+  languages: Record<string, number>,
+  modules: string[],
+  techStack: string[],
+  summary: string
+): string {
+  const langList = Object.entries(languages)
+    .sort((a, b) => b[1] - a[1])
+    .map(([lang, pct]) => `${lang} (${pct.toFixed(1)}%)`)
+    .join(", ");
+
+  const fileLines = fileTree.split("\n");
+  const totalFiles = fileLines.filter(l => l.startsWith("[file]")).length;
+  const testFiles = fileLines.filter(l =>
+    l.includes("test") || l.includes("spec") || l.includes("__tests__")
+  ).length;
+  const hasReadme = fileLines.some(l => l.toLowerCase().includes("readme"));
+  const hasCiCd = fileLines.some(l =>
+    l.includes(".github") || l.includes(".gitlab-ci") || l.includes("Jenkinsfile") || l.includes(".circleci")
+  );
+  const todoCount = 0; // placeholder — we don't have file contents
+
+  return `You are a senior software engineer performing a codebase health assessment for "${repoName}".
+
+Repository summary: ${summary}
+Languages: ${langList || "Unknown"}
+Main modules: ${modules.slice(0, 10).join(", ") || "Unknown"}
+Tech stack: ${techStack.slice(0, 10).join(", ") || "Unknown"}
+Total files (sample): ${totalFiles}
+Test/spec files detected: ${testFiles}
+Has README: ${hasReadme}
+Has CI/CD config: ${hasCiCd}
+
+File structure sample:
+${fileTree.substring(0, 3000)}
+
+Analyze this codebase and produce a health score report in JSON format. Be realistic and critical — not everything should score 80+. Score based on what you can genuinely infer from file structure, naming conventions, and tech choices.
+
+Return ONLY valid JSON matching this exact shape:
+{
+  "overallScore": 72,
+  "riskLevel": "medium",
+  "categories": [
+    {
+      "name": "Code Organization",
+      "score": 80,
+      "signals": [
+        "Clear separation of concerns in folder structure",
+        "Consistent module naming conventions"
+      ],
+      "recommendation": "Consider extracting utility helpers into a shared lib folder."
+    },
+    {
+      "name": "Test Coverage",
+      "score": 45,
+      "signals": [
+        "${testFiles} test/spec files detected out of ${totalFiles} total files",
+        "Test-to-source ratio is low"
+      ],
+      "recommendation": "Add unit tests for core business logic, especially service layer."
+    },
+    {
+      "name": "Documentation",
+      "score": 60,
+      "signals": [
+        "${hasReadme ? "README present" : "No README detected"}",
+        "Inline documentation coverage unknown"
+      ],
+      "recommendation": "Add JSDoc comments to public APIs and complex functions."
+    },
+    {
+      "name": "Technical Debt",
+      "score": 65,
+      "signals": [
+        "No obvious signs of large monolithic files",
+        "Tech stack is modern"
+      ],
+      "recommendation": "Review older dependencies for security patches."
+    },
+    {
+      "name": "CI/CD Maturity",
+      "score": 55,
+      "signals": [
+        "${hasCiCd ? "CI/CD configuration detected" : "No CI/CD configuration found"}"
+      ],
+      "recommendation": "${hasCiCd ? "Expand pipeline with automated testing and deployment stages." : "Add a CI/CD pipeline to automate testing and deployment."}"
+    }
+  ],
+  "insights": [
+    "The codebase shows clear layered architecture typical of well-structured ${techStack[0] || "projects"}.",
+    "Test coverage signals suggest testing is not yet a core practice.",
+    "The tech stack is modern and well-chosen for the domain."
+  ],
+  "recommendations": [
+    "Prioritize writing tests for the service layer",
+    "Add API documentation using OpenAPI or similar",
+    "Set up automated dependency vulnerability scanning"
+  ]
+}
+
+Rules:
+- Scores must be integers 0-100. Be honest — a real project rarely scores above 85.
+- overallScore is a weighted average (organization 25%, test coverage 25%, documentation 20%, tech debt 20%, CI/CD 10%)
+- riskLevel: "low" if overall >= 75, "medium" if >= 50, "high" if >= 30, "critical" if < 30
+- Each category must have 2-4 specific signals based on what you can see
+- Insights: 3-5 sentences of high-level takeaways for a new developer
+- Recommendations: 3-5 concrete, prioritized action items`;
+}
+
 export function buildArchitecturePrompt(
   repoName: string,
   fileTree: string,

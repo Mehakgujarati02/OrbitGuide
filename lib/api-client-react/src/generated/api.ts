@@ -25,6 +25,8 @@ import type {
   ChatMessage,
   ChatMessageInput,
   FileNode,
+  GetHealthScoreParams,
+  HealthScore,
   HealthStatus,
   LearningPath,
   LearningPathRequest,
@@ -1013,6 +1015,95 @@ export function useGetArchitecture<TData = Awaited<ReturnType<typeof getArchitec
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetArchitectureQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetHealthScoreUrl = (id: number,
+    params?: GetHealthScoreParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/repositories/${id}/health?${stringifiedParams}` : `/api/repositories/${id}/health`
+}
+
+/**
+ * @summary Get AI-generated health score for a repository
+ */
+export const getHealthScore = async (id: number,
+    params?: GetHealthScoreParams, options?: RequestInit): Promise<HealthScore> => {
+
+  return customFetch<HealthScore>(getGetHealthScoreUrl(id,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHealthScoreQueryKey = (id: number,
+    params?: GetHealthScoreParams,) => {
+    return [
+    `/api/repositories/${id}/health`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetHealthScoreQueryOptions = <TData = Awaited<ReturnType<typeof getHealthScore>>, TError = ErrorType<ApiError>>(id: number,
+    params?: GetHealthScoreParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHealthScore>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHealthScoreQueryKey(id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHealthScore>>> = ({ signal }) => getHealthScore(id,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHealthScore>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetHealthScoreQueryResult = NonNullable<Awaited<ReturnType<typeof getHealthScore>>>
+export type GetHealthScoreQueryError = ErrorType<ApiError>
+
+
+/**
+ * @summary Get AI-generated health score for a repository
+ */
+
+export function useGetHealthScore<TData = Awaited<ReturnType<typeof getHealthScore>>, TError = ErrorType<ApiError>>(
+ id: number,
+    params?: GetHealthScoreParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHealthScore>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetHealthScoreQueryOptions(id,params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

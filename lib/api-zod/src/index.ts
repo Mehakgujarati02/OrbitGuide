@@ -1,2 +1,36 @@
 export * from "./generated/api";
-export * from "./generated/types";
+// Re-export all types except those that conflict with Zod schema names in api.ts
+// (GetHealthScoreParams is excluded because api.ts exports the same name as a Zod schema)
+export type {
+  ApiError,
+  Architecture,
+  ArchitectureComponent,
+  ArchitectureComponentType,
+  ArchitectureLayer,
+  ChatMessage,
+  ChatMessageInput,
+  ChatMessageRole,
+  Dependency,
+  DependencyType,
+  FileNode,
+  FileNodeType,
+  HealthCategory,
+  HealthScore,
+  HealthScoreRiskLevel,
+  HealthStatus,
+  LanguageStat,
+  LearningPath,
+  LearningPathDifficulty,
+  LearningPathRequest,
+  LearningStep,
+  Module,
+  ModuleImportance,
+  Repository,
+  RepositoryDetail,
+  RepositoryDetailStatus,
+  RepositoryInput,
+  RepositoryStats,
+  RepositoryStatus,
+  RepositorySummary,
+  Service,
+} from "./generated/types";

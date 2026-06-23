@@ -16,6 +16,8 @@ import {
   GetLearningPathParams,
   GetArchitectureParams,
   ClearChatHistoryParams,
+  GetHealthScoreParams,
+  GetHealthScoreQueryParams,
 } from "@workspace/api-zod";
 import { parseGitLabUrl, fetchProject, fetchRepositoryTree, fetchLanguages } from "../../lib/gitlab";
 import { openai } from "../../lib/openai";
@@ -24,6 +26,7 @@ import {
   buildChatSystemPrompt,
   buildLearningPathPrompt,
   buildArchitecturePrompt,
+  buildHealthScorePrompt,
 } from "../../lib/ai-prompts";
 import { logger } from "../../lib/logger";
 
@@ -421,6 +424,69 @@ router.post("/repositories/:id/learning-path", async (req, res): Promise<void> =
     difficulty: lp.difficulty,
     createdAt: lp.createdAt,
   });
+});
+
+router.get("/repositories/:id/health", async (req, res): Promise<void> => {
+  const params = GetHealthScoreParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+
+  const query = GetHealthScoreQueryParams.safeParse(req.query);
+  const forceRefresh = query.success && query.data.refresh === true;
+
+  const [repo] = await db.select().from(repositoriesTable).where(eq(repositoriesTable.id, params.data.id));
+  if (!repo) { res.status(404).json({ error: "Repository not found" }); return; }
+
+  const raw = repo.rawData as Record<string, unknown> | null;
+
+  if (!forceRefresh && raw?.healthScore) {
+    res.json(raw.healthScore);
+    return;
+  }
+
+  const treeItems = (raw?.fileTree as Array<{ name: string; path: string; type: string }>) || [];
+  const languageStats = (raw?.languageStats as Array<{ language: string; percentage: number }>) || [];
+  const fileTree = buildFileTree(treeItems);
+  const languages: Record<string, number> = Object.fromEntries(
+    languageStats.map((l) => [l.language, l.percentage])
+  );
+
+  const prompt = buildHealthScorePrompt(
+    repo.name,
+    fileTree,
+    languages,
+    repo.modules || [],
+    repo.techStack || [],
+    repo.summary || ""
+  );
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    max_tokens: 3000,
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_object" },
+  });
+
+  const content = completion.choices[0]?.message?.content;
+  if (!content) { res.status(500).json({ error: "AI generation failed" }); return; }
+
+  const result = JSON.parse(content);
+
+  const healthScore = {
+    repositoryId: repo.id,
+    overallScore: result.overallScore ?? 50,
+    riskLevel: result.riskLevel ?? "medium",
+    categories: result.categories ?? [],
+    insights: result.insights ?? [],
+    recommendations: result.recommendations ?? [],
+    generatedAt: new Date().toISOString(),
+  };
+
+  await db.update(repositoriesTable).set({
+    rawData: { ...raw, healthScore },
+    updatedAt: new Date(),
+  }).where(eq(repositoriesTable.id, repo.id));
+
+  res.json(healthScore);
 });
 
 router.get("/repositories/:id/architecture", async (req, res): Promise<void> => {

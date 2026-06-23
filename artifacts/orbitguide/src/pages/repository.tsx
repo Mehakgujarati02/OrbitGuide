@@ -17,6 +17,7 @@ import { OverviewTab } from "@/components/tabs/overview-tab";
 import { ChatTab } from "@/components/tabs/chat-tab";
 import { LearningPathTab } from "@/components/tabs/learning-path-tab";
 import { ArchitectureTab } from "@/components/tabs/architecture-tab";
+import { HealthTab } from "@/components/tabs/health-tab";
 
 export default function RepositoryDetail() {
   const [match, params] = useRoute("/repositories/:id");
@@ -137,6 +138,9 @@ export default function RepositoryDetail() {
             <TabsTrigger value="architecture" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3 data-[state=active]:text-foreground text-muted-foreground font-medium">
               Architecture
             </TabsTrigger>
+            <TabsTrigger value="health" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3 data-[state=active]:text-foreground text-muted-foreground font-medium">
+              Health Score
+            </TabsTrigger>
           </TabsList>
           
           <div className="flex-1 relative overflow-hidden">
@@ -154,6 +158,10 @@ export default function RepositoryDetail() {
             
             <TabsContent value="architecture" className="h-full m-0 data-[state=inactive]:hidden overflow-y-auto pr-2">
               <ArchitectureTab repositoryId={repo.id} />
+            </TabsContent>
+
+            <TabsContent value="health" className="h-full m-0 data-[state=inactive]:hidden overflow-y-auto pr-2">
+              <HealthTab repositoryId={repo.id} />
             </TabsContent>
           </div>
         </Tabs>
