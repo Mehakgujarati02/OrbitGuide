@@ -30,6 +30,7 @@ export const ListRepositoriesResponseItem = zod.object({
   "language": zod.string().nullish(),
   "starCount": zod.number(),
   "forksCount": zod.number(),
+  "errorMessage": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -254,6 +255,30 @@ export const GetArchitectureResponse = zod.object({
   "components": zod.array(zod.string())
 })),
   "diagramText": zod.string()
+})
+
+
+/**
+ * @summary Re-trigger analysis for a failed or errored repository
+ */
+export const ReanalyzeRepositoryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ReanalyzeRepositoryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "url": zod.string(),
+  "namespace": zod.string(),
+  "description": zod.string().nullish(),
+  "defaultBranch": zod.string(),
+  "status": zod.enum(['pending', 'analyzing', 'ready', 'error']),
+  "language": zod.string().nullish(),
+  "starCount": zod.number(),
+  "forksCount": zod.number(),
+  "errorMessage": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
 })
 
 

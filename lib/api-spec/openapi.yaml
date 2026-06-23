@@ -318,6 +318,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /repositories/{id}/reanalyze:
+    post:
+      operationId: reanalyzeRepository
+      tags: [repositories]
+      summary: Re-trigger analysis for a failed or errored repository
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Analysis restarted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Repository"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /repositories/{id}/health:
     get:
       operationId: getHealthScore
@@ -405,6 +430,8 @@ components:
           type: integer
         forksCount:
           type: integer
+        errorMessage:
+          type: ["string", "null"]
         createdAt:
           type: string
           format: date-time

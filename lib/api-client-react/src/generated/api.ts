@@ -1027,6 +1027,76 @@ export function useGetArchitecture<TData = Awaited<ReturnType<typeof getArchitec
 
 
 
+export const getReanalyzeRepositoryUrl = (id: number,) => {
+
+
+
+
+  return `/api/repositories/${id}/reanalyze`
+}
+
+/**
+ * @summary Re-trigger analysis for a failed or errored repository
+ */
+export const reanalyzeRepository = async (id: number, options?: RequestInit): Promise<Repository> => {
+
+  return customFetch<Repository>(getReanalyzeRepositoryUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getReanalyzeRepositoryMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reanalyzeRepository>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reanalyzeRepository>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['reanalyzeRepository'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reanalyzeRepository>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  reanalyzeRepository(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReanalyzeRepositoryMutationResult = NonNullable<Awaited<ReturnType<typeof reanalyzeRepository>>>
+
+    export type ReanalyzeRepositoryMutationError = ErrorType<ApiError>
+
+    /**
+ * @summary Re-trigger analysis for a failed or errored repository
+ */
+export const useReanalyzeRepository = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reanalyzeRepository>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof reanalyzeRepository>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getReanalyzeRepositoryMutationOptions(options));
+    }
+
 export const getGetHealthScoreUrl = (id: number,
     params?: GetHealthScoreParams,) => {
   const normalizedParams = new URLSearchParams();

@@ -177,8 +177,19 @@ router.post("/repositories", async (req, res): Promise<void> => {
       logger.info({ repoId: repo.id }, "Repository analysis complete");
     } catch (err) {
       logger.error({ err, repoId: repo.id }, "Repository analysis failed");
-      await db.update(repositoriesTable).set({ status: "error", updatedAt: new Date() })
-        .where(eq(repositoriesTable.id, repo.id));
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const friendlyError = errMsg.includes("insufficient_quota") || errMsg.includes("429")
+        ? "OpenAI API quota exceeded — add credits at platform.openai.com/settings/billing, then retry."
+        : errMsg.includes("401") || errMsg.includes("Unauthorized")
+        ? "OpenAI API key is invalid or missing. Check your OPENAI_API_KEY secret."
+        : errMsg.includes("GitLab") || errMsg.includes("403") || errMsg.includes("404")
+        ? "Could not access GitLab repository. Check the URL and token permissions."
+        : `Analysis failed: ${errMsg.slice(0, 120)}`;
+      await db.update(repositoriesTable).set({
+        status: "error",
+        rawData: { errorMessage: friendlyError },
+        updatedAt: new Date(),
+      }).where(eq(repositoriesTable.id, repo.id));
     }
   })();
 });

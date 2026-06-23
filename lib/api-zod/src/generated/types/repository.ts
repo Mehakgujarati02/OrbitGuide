@@ -20,6 +20,8 @@ export interface Repository {
   language?: string | null;
   starCount: number;
   forksCount: number;
+  /** @nullable */
+  errorMessage?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
