@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
   useListRepositories, 
-  useAnalyzeRepository, 
+  useAnalyzeRepository,
+  useReanalyzeRepository,
   getListRepositoriesQueryKey 
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,8 @@ import {
   CheckCircle2,
   FolderGit2,
   Search,
-  Plus
+  Plus,
+  RefreshCw,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +103,24 @@ export default function Dashboard() {
 }
 
 function RepositoryCard({ repo }: { repo: any }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const reanalyzeMutation = useReanalyzeRepository();
+
+  const handleRetry = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    reanalyzeMutation.mutate({ id: repo.id }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListRepositoriesQueryKey() });
+        toast({ title: "Re-analysis started", description: "Analysis is running in the background." });
+      },
+      onError: () => {
+        toast({ title: "Error", description: "Failed to start re-analysis.", variant: "destructive" });
+      },
+    });
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ready':
@@ -125,12 +145,32 @@ function RepositoryCard({ repo }: { repo: any }) {
           </div>
           {getStatusBadge(repo.status)}
         </div>
-        
+
         <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">{repo.name}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2 flex-grow mb-4">
           {repo.description || "No description provided."}
         </p>
-        
+
+        {repo.status === 'error' && (
+          <div className="mb-4 rounded-lg bg-red-500/8 border border-red-500/20 p-3 space-y-2">
+            <p className="text-xs text-red-400 leading-relaxed">
+              {repo.errorMessage || "Analysis failed. Try again."}
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+              onClick={handleRetry}
+              disabled={reanalyzeMutation.isPending}
+            >
+              {reanalyzeMutation.isPending
+                ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                : <RefreshCw className="w-3 h-3 mr-1.5" />}
+              Retry Analysis
+            </Button>
+          </div>
+        )}
+
         <div className="flex items-center gap-4 text-xs text-muted-foreground mt-auto pt-4 border-t border-border/50">
           {repo.language && (
             <div className="flex items-center gap-1.5">

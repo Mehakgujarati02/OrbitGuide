@@ -18,6 +18,7 @@ import {
   ClearChatHistoryParams,
   GetHealthScoreParams,
   GetHealthScoreQueryParams,
+  ReanalyzeRepositoryParams,
 } from "@workspace/api-zod";
 import { parseGitLabUrl, fetchProject, fetchRepositoryTree, fetchLanguages } from "../../lib/gitlab";
 import { openai } from "../../lib/openai";
@@ -58,20 +59,24 @@ function buildFileTreeNodes(items: Array<{ name: string; path: string; type: str
 
 router.get("/repositories", async (_req, res): Promise<void> => {
   const repos = await db.select().from(repositoriesTable).orderBy(desc(repositoriesTable.updatedAt));
-  res.json(repos.map((r) => ({
-    id: r.id,
-    name: r.name,
-    url: r.url,
-    namespace: r.namespace,
-    description: r.description,
-    defaultBranch: r.defaultBranch,
-    status: r.status,
-    language: r.language,
-    starCount: r.starCount,
-    forksCount: r.forksCount,
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
-  })));
+  res.json(repos.map((r) => {
+    const raw = r.rawData as Record<string, unknown> | null;
+    return {
+      id: r.id,
+      name: r.name,
+      url: r.url,
+      namespace: r.namespace,
+      description: r.description,
+      defaultBranch: r.defaultBranch,
+      status: r.status,
+      language: r.language,
+      starCount: r.starCount,
+      forksCount: r.forksCount,
+      errorMessage: r.status === "error" ? (raw?.errorMessage as string | null) ?? null : null,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    };
+  }));
 });
 
 router.post("/repositories", async (req, res): Promise<void> => {
@@ -220,6 +225,93 @@ router.delete("/repositories/:id", async (req, res): Promise<void> => {
   if (!repo) { res.status(404).json({ error: "Repository not found" }); return; }
 
   res.sendStatus(204);
+});
+
+router.post("/repositories/:id/reanalyze", async (req, res): Promise<void> => {
+  const params = ReanalyzeRepositoryParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+
+  const [repo] = await db.select().from(repositoriesTable).where(eq(repositoriesTable.id, params.data.id));
+  if (!repo) { res.status(404).json({ error: "Repository not found" }); return; }
+
+  await db.update(repositoriesTable).set({
+    status: "analyzing",
+    rawData: null,
+    updatedAt: new Date(),
+  }).where(eq(repositoriesTable.id, params.data.id));
+
+  const urlInfo = parseGitLabUrl(repo.url);
+  if (!urlInfo) {
+    await db.update(repositoriesTable).set({ status: "error", rawData: { errorMessage: "Invalid repository URL stored." }, updatedAt: new Date() }).where(eq(repositoriesTable.id, repo.id));
+    res.status(400).json({ error: "Invalid repository URL" });
+    return;
+  }
+
+  res.json({
+    id: repo.id, name: repo.name, url: repo.url, namespace: repo.namespace,
+    description: repo.description, defaultBranch: repo.defaultBranch,
+    status: "analyzing", language: repo.language, starCount: repo.starCount,
+    forksCount: repo.forksCount, errorMessage: null,
+    createdAt: repo.createdAt, updatedAt: new Date(),
+  });
+
+  // Background re-analysis
+  (async () => {
+    try {
+      const [treeItems, languages] = await Promise.all([
+        fetchRepositoryTree(urlInfo.projectPath, repo.defaultBranch),
+        fetchLanguages(urlInfo.projectPath),
+      ]);
+
+      const fileTree = buildFileTree(treeItems);
+      const prompt = buildRepositoryAnalysisPrompt(repo.name, fileTree, languages);
+
+      const completion = await openai.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 4096,
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) throw new Error("Empty AI response");
+
+      const analysis = JSON.parse(content);
+      const primaryLang = Object.keys(languages).length > 0
+        ? Object.entries(languages).sort((a, b) => b[1] - a[1])[0][0] : null;
+      const langStats = Object.entries(languages).map(([language, percentage]) => ({
+        language, percentage: parseFloat(percentage.toFixed(1)),
+        fileCount: Math.round((treeItems.filter(i => i.type === "blob").length * percentage) / 100),
+      }));
+
+      await db.update(repositoriesTable).set({
+        status: "ready", language: primaryLang,
+        summary: analysis.overview || "",
+        modules: (analysis.modules || analysis.mainModules?.map((m: { name: string }) => m.name) || []).slice(0, 15),
+        keyServices: (analysis.services || analysis.keyServices?.map((s: { name: string }) => s.name) || []).slice(0, 15),
+        techStack: (analysis.techStack || []).slice(0, 15),
+        rawData: {
+          overview: analysis.overview, purpose: analysis.purpose,
+          mainModules: analysis.mainModules, keyServices: analysis.keyServices,
+          entryPoints: analysis.entryPoints, techStack: analysis.techStack,
+          fileTree: treeItems.slice(0, 300), languageStats: langStats,
+          totalFiles: treeItems.filter(i => i.type === "blob").length,
+        },
+        updatedAt: new Date(),
+      }).where(eq(repositoriesTable.id, repo.id));
+
+      logger.info({ repoId: repo.id }, "Re-analysis complete");
+    } catch (err) {
+      logger.error({ err, repoId: repo.id }, "Re-analysis failed");
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const friendlyError = errMsg.includes("insufficient_quota") || errMsg.includes("429")
+        ? "API quota exceeded — check your GROQ_API_KEY."
+        : `Analysis failed: ${errMsg.slice(0, 120)}`;
+      await db.update(repositoriesTable).set({
+        status: "error", rawData: { errorMessage: friendlyError }, updatedAt: new Date(),
+      }).where(eq(repositoriesTable.id, repo.id));
+    }
+  })();
 });
 
 router.get("/repositories/:id/summary", async (req, res): Promise<void> => {
