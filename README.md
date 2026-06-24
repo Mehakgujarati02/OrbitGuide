@@ -1,9 +1,9 @@
-OrbitGuide 🚀
+#OrbitGuide 
 AI-Powered GitLab Repository Intelligence & Developer Onboarding
 
 OrbitGuide helps developers understand unfamiliar GitLab repositories in minutes instead of days using AI-powered repository analysis, architecture exploration, interactive chat, and personalized learning paths.
 
-🎯 The Problem
+#🎯 The Problem
 
 Joining a new codebase is slow and frustrating.
 
@@ -16,7 +16,7 @@ Asking senior engineers repetitive questions
 
 Knowledge becomes concentrated among a few experienced developers, making onboarding inefficient and costly.
 
-💡 The Solution
+#💡 The Solution
 
 OrbitGuide transforms any GitLab repository into an AI-navigable knowledge base.
 
@@ -78,7 +78,9 @@ Documentation quality
 Complexity
 Test coverage readiness
 Developer onboarding experience
-🔄 How It Works
+## 🔄 How It Works
+
+```text
 GitLab Repository URL
            │
            ▼
@@ -96,63 +98,78 @@ Summary  Chat   Learning Path
            │
            ▼
  Architecture Explorer
-🛠 Tech Stack
-Frontend
-React
-Vite
-TypeScript
-Tailwind CSS v4
-shadcn/ui
-Wouter
-Backend
-Node.js
-Express 5
-TypeScript
-Database
-PostgreSQL
-Drizzle ORM
-drizzle-zod
-AI
-Groq API
-Llama 3.3 70B Versatile
-OpenAI-Compatible SDK
-GitLab Integration
-GitLab REST API v4
-GitLab Personal Access Token Authentication
-API Development
-OpenAPI 3.1
-Orval Code Generation
-Zod Validation
-📁 Project Structure
+```
+
+
+## 🛠 Tech Stack
+
+### Frontend
+- React
+- Vite
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui
+- Wouter
+
+### Backend
+- Node.js
+- Express 5
+- TypeScript
+
+### Database
+- PostgreSQL
+- Drizzle ORM
+
+### AI
+- Groq API
+- Llama 3.3 70B
+
+### GitLab Integration
+- GitLab REST API v4
+- Personal Access Tokens
+
+## 📁 Project Structure
+
+```text
 OrbitGuide
 │
 ├── Frontend (React)
-│   └── Dashboard
-│   └── AI Chat
-│   └── Learning Paths
+│   ├── Dashboard
+│   ├── AI Chat
+│   ├── Learning Paths
 │   └── Architecture Explorer
 │
 ├── API Server (Express)
-│   └── Repository Analysis
-│   └── Chat Streaming
-│   └── Learning Path Generation
+│   ├── Repository Analysis
+│   ├── Chat Streaming
+│   ├── Learning Path Generation
 │   └── Architecture Generation
 │
 ├── PostgreSQL Database
-│   └── Repositories
-│   └── Chat Messages
-│   └── Learning Paths
+│   ├── Repositories
+│   ├── Chat Messages
+│   ├── Learning Paths
 │   └── Architectures
 │
 └── GitLab + AI Layer
-    └── GitLab API
+    ├── GitLab API
     └── Groq LLM
-🚀 Getting Started
-Clone Repository
+```
+
+## 🚀 Getting Started
+
+### Clone Repository
+
+```bash
 git clone https://github.com/Mehakgujarati02/OrbitGuide.git
 cd OrbitGuide
-Install Dependencies
+```
+
+### Install Dependencies
+
+```bash
 pnpm install
+```
 Environment Variables
 
 Create a .env file:
@@ -166,48 +183,48 @@ Run Backend
 pnpm --filter @workspace/api-server run dev
 Run Frontend
 pnpm --filter @workspace/orbitguide run dev
-📸 Screenshots
 
-Add screenshots here:
+#📸 Screenshots
 
-Landing Page
+1)Landing Page
+<img width="1887" height="835" alt="Screenshot 2026-06-24 222131" src="https://github.com/user-attachments/assets/bc679730-6d49-4eda-b292-efe0250af3f1" />
 
-(Insert screenshot)
 
 Repository Dashboard
 
-(Insert screenshot)
+<img width="1906" height="851" alt="Screenshot 2026-06-24 222207" src="https://github.com/user-attachments/assets/a679935a-5b82-4d6c-b99f-398cd9bce459" />
+<img width="1872" height="882" alt="Screenshot 2026-06-24 222227" src="https://github.com/user-attachments/assets/cff3a748-79a7-4f22-bb91-9f54136dbc80" />
+<img width="1856" height="803" alt="Screenshot 2026-06-24 222244" src="https://github.com/user-attachments/assets/c4930970-bbb4-4202-957f-6623bbe8e1ac" />
+
 
 AI Chat
+<img width="1871" height="833" alt="Screenshot 2026-06-24 222320" src="https://github.com/user-attachments/assets/498c924a-fdeb-4ede-9bb0-f4e880532f38" />
 
-(Insert screenshot)
 
 Learning Path Generator
+<img width="1821" height="851" alt="Screenshot 2026-06-24 222500" src="https://github.com/user-attachments/assets/9f44d47b-0762-415d-9cca-c043373bf20b" />
 
-(Insert screenshot)
 
 Architecture Explorer
+<img width="1811" height="847" alt="Screenshot 2026-06-24 222533" src="https://github.com/user-attachments/assets/c170bd13-3171-4ccc-8571-15430575fd0c" />
+<img width="1862" height="856" alt="Screenshot 2026-06-24 222559" src="https://github.com/user-attachments/assets/1f6230f8-fb87-42f0-8697-727fc8a6e386" />
 
-(Insert screenshot)
+Health Analysis
+<img width="1898" height="872" alt="Screenshot 2026-06-24 222622" src="https://github.com/user-attachments/assets/22589760-a056-4866-9ca3-d9643df4de3e" />
+<img width="1847" height="672" alt="Screenshot 2026-06-24 222650" src="https://github.com/user-attachments/assets/6ba880ff-2a5e-45f3-8f94-c02db775ad79" />
 
-🎖 Use Cases
+
+#🎖 Use Cases
 New Developer Onboarding
-
 Reduce onboarding time from days to minutes.
-
 Repository Exploration
-
 Quickly understand large and unfamiliar projects.
-
 Team Knowledge Sharing
-
 Make architectural knowledge accessible to everyone.
-
 Technical Documentation
-
 Generate contextual explanations directly from source code.
 
-🔮 Future Enhancements
+#🔮 Future Enhancements
 Multi-repository analysis
 Pull request intelligence
 Code smell detection
