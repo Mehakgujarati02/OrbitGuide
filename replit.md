@@ -11,7 +11,7 @@ AI-powered developer onboarding platform that helps new engineers understand lar
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
-- Required env: `OPENAI_API_KEY` — OpenAI API key for AI features
+- Required env: `GROQ_API_KEY` — Groq API key for AI features (free at console.groq.com)
 - Required env: `GITLAB_TOKEN` — GitLab Personal Access Token (read_api, read_repository scopes)
 
 ## Stack
@@ -20,7 +20,7 @@ AI-powered developer onboarding platform that helps new engineers understand lar
 - Frontend: React + Vite + Tailwind CSS v4 + shadcn/ui + wouter
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
-- AI: OpenAI GPT-4o-mini (chat completions, streaming SSE)
+- AI: Groq llama-3.3-70b-versatile (chat completions, streaming SSE) via OpenAI-compatible SDK
 - GitLab: GitLab REST API v4 (project fetch, file tree, languages)
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)

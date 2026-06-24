@@ -132,7 +132,7 @@ router.post("/repositories", async (req, res): Promise<void> => {
       const prompt = buildRepositoryAnalysisPrompt(project.name, fileTree, languages);
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "llama-3.3-70b-versatile",
         max_tokens: 4096,
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
@@ -327,7 +327,7 @@ router.post("/repositories/:id/chat", async (req, res): Promise<void> => {
   let fullResponse = "";
 
   const stream = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "llama-3.3-70b-versatile",
     max_tokens: 4096,
     messages: [{ role: "system", content: systemPrompt }, ...chatMessages],
     stream: true,
@@ -407,7 +407,7 @@ router.post("/repositories/:id/learning-path", async (req, res): Promise<void> =
   );
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "llama-3.3-70b-versatile",
     max_tokens: 4096,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
@@ -471,7 +471,7 @@ router.get("/repositories/:id/health", async (req, res): Promise<void> => {
   );
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "llama-3.3-70b-versatile",
     max_tokens: 3000,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
@@ -529,7 +529,7 @@ router.get("/repositories/:id/architecture", async (req, res): Promise<void> => 
   const prompt = buildArchitecturePrompt(repo.name, fileTree, repo.modules || [], repo.keyServices || []);
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "llama-3.3-70b-versatile",
     max_tokens: 4096,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
