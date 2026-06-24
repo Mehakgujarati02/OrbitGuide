@@ -193,7 +193,9 @@ pnpm --filter @workspace/orbitguide run dev
 Repository Dashboard
 
 <img width="1906" height="851" alt="Screenshot 2026-06-24 222207" src="https://github.com/user-attachments/assets/a679935a-5b82-4d6c-b99f-398cd9bce459" />
+
 <img width="1872" height="882" alt="Screenshot 2026-06-24 222227" src="https://github.com/user-attachments/assets/cff3a748-79a7-4f22-bb91-9f54136dbc80" />
+
 <img width="1856" height="803" alt="Screenshot 2026-06-24 222244" src="https://github.com/user-attachments/assets/c4930970-bbb4-4202-957f-6623bbe8e1ac" />
 
 
@@ -207,10 +209,12 @@ Learning Path Generator
 
 Architecture Explorer
 <img width="1811" height="847" alt="Screenshot 2026-06-24 222533" src="https://github.com/user-attachments/assets/c170bd13-3171-4ccc-8571-15430575fd0c" />
+
 <img width="1862" height="856" alt="Screenshot 2026-06-24 222559" src="https://github.com/user-attachments/assets/1f6230f8-fb87-42f0-8697-727fc8a6e386" />
 
 Health Analysis
 <img width="1898" height="872" alt="Screenshot 2026-06-24 222622" src="https://github.com/user-attachments/assets/22589760-a056-4866-9ca3-d9643df4de3e" />
+
 <img width="1847" height="672" alt="Screenshot 2026-06-24 222650" src="https://github.com/user-attachments/assets/6ba880ff-2a5e-45f3-8f94-c02db775ad79" />
 
 
